@@ -16,7 +16,9 @@ import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
-
+import org.newdawn.slick.openal.Audio;
+import org.newdawn.slick.openal.AudioLoader;
+import org.newdawn.slick.openal.SoundStore;
 /**
  * 
  * This is a <em>very basic</em> skeleton to init a game and run it.
@@ -37,9 +39,9 @@ public class Game {
 	private static final int FRAMERATE = 60;
 
 	private static final int MAX_LIFES = 3;
-	private static final int MAX_TREASURES_COUNT = 20;
+	private static final int MAX_TREASURES_COUNT = 15;
 	private static final int START_OBJECTS_SPEED = 5;
-	private static final int MAX_MINES_COUNT = 5;	
+	private static final int MAX_MINES_COUNT = 4;	
 	private static final int HERO_START_X = 50;
 	private static final int HERO_START_Y = 50;
 	private static final int SCORE = 0;
@@ -54,7 +56,6 @@ public class Game {
 	private ArrayList<Entity> levelsTreasures;
 	private ArrayList<Entity> levelsMines;
 	private Life[] life = new Life[MAX_LIFES];
-	private RemoveLife removeLife;
 	private HeroEntity heroEntity;
 	private int currentLevel = 1;
 	private static int startObjectsSpeed = START_OBJECTS_SPEED;
@@ -62,6 +63,9 @@ public class Game {
 	private int maxTreasuresCount = MAX_TREASURES_COUNT;
 	private int score = SCORE;
 	private int record = RECORD;
+	private Audio meteroidSound;
+	private Audio treasureCollectedSound;
+	private Audio levelUp;
 	private TrueTypeFont font;
 	private TrueTypeFont fontSmaller;
 	
@@ -170,7 +174,8 @@ public class Game {
 
 	private void initTextures() throws IOException {
 		entities = new ArrayList<Entity>();
-
+		
+		initSounds();
 		initLevel();
 		initLifes();
 		Texture texture;
@@ -186,6 +191,14 @@ public class Game {
 		// Generate the treasures
 		initTreasures();
 	}
+	
+	
+	
+	private void initSounds() throws IOException {
+		meteroidSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteroid.wav"));
+		treasureCollectedSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/treasure.wav"));
+		levelUp = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/levelUp.wav"));
+	}
 
 	private void initLevel() throws IOException {
 		Texture texture;
@@ -200,9 +213,6 @@ public class Game {
 			texture = TextureLoader.getTexture("PNG",
 					ResourceLoader.getResourceAsStream("res/life.png"));
 			life[i] = new Life(texture);
-			texture = TextureLoader.getTexture("PNG",
-					ResourceLoader.getResourceAsStream("res/x.png"));
-			removeLife = new RemoveLife(texture);
 		}
 	}	
 	
@@ -305,10 +315,8 @@ public class Game {
 		}
 		
 		if(gamePaused == false) {
-			if(removeLife.isVisible()){
-				removeLife.setVisible(false);
-			}	
 			if (lifes > 0) {
+				SoundStore.get().poll(0);
 				logicHero();
 				logicTreasures();
 				logicMines();
@@ -341,9 +349,6 @@ public class Game {
 			startWidth = startWidth-50;
 			life[i].draw(startWidth, 20);					
 		}	
-		if (removeLife.isVisible()) {
-			removeLife.draw(heroEntity.getX(), heroEntity.getY());			
-		}
 		
 	}
 
@@ -498,16 +503,18 @@ public class Game {
 			changeObjectCoordinate(treasure);
 			treasuresCollected++;
 			score++;
+			treasureCollectedSound.playAsSoundEffect(1.0f, 1.0f, false);
 			if(treasuresCollected == maxTreasuresCount){
 				treasuresCollected = 0;
 				maxTreasuresCount = maxTreasuresCount+10;
+				levelUp.playAsSoundEffect(1.0f, 1.0f, false);
 				currentLevel++;
 				startObjectsSpeed = startObjectsSpeed + 1; 
 			}
 		} else if (object instanceof MeteorEntity) {
 			Entity mine = (Entity) object;
+			meteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
 			changeObjectCoordinate(mine);
-			removeLife.setVisible(true);
 			lifes--;
 			if(lifes == 0){
 				if(record == 0){					
