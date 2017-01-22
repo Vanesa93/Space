@@ -43,23 +43,28 @@ public class Game {
 	private static final int HERO_START_X = 50;
 	private static final int HERO_START_Y = 50;
 	private static final int SCORE = 0;
-
+	private static final int RECORD = 0;
+	private static final boolean GAME_PAUSED = false;
+	
 	/** Exit the game */
 	private boolean finished;
-	
+	private boolean gamePaused = GAME_PAUSED;
 	private LevelTile levelTile;
 	private ArrayList<Entity> entities;
 	private ArrayList<Entity> levelsTreasures;
 	private ArrayList<Entity> levelsMines;
 	private Life[] life = new Life[MAX_LIFES];
+	private RemoveLife removeLife;
 	private HeroEntity heroEntity;
 	private int currentLevel = 1;
 	private static int startObjectsSpeed = START_OBJECTS_SPEED;
 	private int lifes = MAX_LIFES;
 	private int maxTreasuresCount = MAX_TREASURES_COUNT;
 	private int score = SCORE;
+	private int record = RECORD;
 	private TrueTypeFont font;
-
+	private TrueTypeFont fontSmaller;
+	
 	private int treasuresCollected = 0;
 
 	/**
@@ -73,7 +78,7 @@ public class Game {
 		myGame.start();
 	}
 
-	public void start() {
+	public void start() {		
 		try {
 			init();
 			run();
@@ -87,6 +92,25 @@ public class Game {
 		System.exit(0);
 	}
 
+	public void restart() {		
+		try {
+			Display.destroy();
+			gamePaused = false;
+			startObjectsSpeed = 5;
+			lifes = MAX_LIFES;
+			currentLevel = 1;
+			treasuresCollected = 0;
+			maxTreasuresCount = MAX_TREASURES_COUNT;
+			score = SCORE;
+			init();
+			run();
+		} catch (Exception e) {
+			e.printStackTrace(System.err);
+			Sys.alert(GAME_TITLE, "An error occured and the game will exit.");
+		} 
+	}
+
+	
 	/**
 	 * Initialise the game
 	 * 
@@ -139,7 +163,9 @@ public class Game {
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 
 		Font awtFont = new Font("Times New Roman", Font.BOLD, 24);
+		Font awtFontSmaller = new Font("Times New Roman", Font.BOLD, 18);
 		font = new TrueTypeFont(awtFont, true);
+		fontSmaller = new TrueTypeFont(awtFontSmaller, true);
 	}
 
 	private void initTextures() throws IOException {
@@ -176,6 +202,7 @@ public class Game {
 			life[i] = new Life(texture);
 			texture = TextureLoader.getTexture("PNG",
 					ResourceLoader.getResourceAsStream("res/x.png"));
+			removeLife = new RemoveLife(texture);
 		}
 	}	
 	
@@ -224,8 +251,8 @@ public class Game {
 				finished = true;
 			} else if (Display.isActive()) {
 				// The window is in the foreground, so we should play the game
-				logic();
-				render();
+					logic();
+					render();
 				Display.sync(FRAMERATE);
 			} else {
 				// The window is not in the foreground, so we can allow other
@@ -263,12 +290,30 @@ public class Game {
 		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 			finished = true;
 		}
-
-		if (lifes > 0) {
-			logicHero();
-			logicTreasures();
-			logicMines();
-			checkForCollision();
+		
+		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
+			restart();
+		}
+		
+	
+		if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
+			gamePaused = true;
+		}
+		
+		if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
+			gamePaused = false;
+		}
+		
+		if(gamePaused == false) {
+			if(removeLife.isVisible()){
+				removeLife.setVisible(false);
+			}	
+			if (lifes > 0) {
+				logicHero();
+				logicTreasures();
+				logicMines();
+				checkForCollision();
+			}
 		}
 	}
 
@@ -279,15 +324,15 @@ public class Game {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
 		Color.white.bind();
 
-		drawLevel();
-
-		drawObjects();
-
-		heroEntity.draw();
-		
-		drawLifes();
-		
-		drawHUD();
+			drawLevel();
+	
+			drawObjects();
+			
+			drawLifes();
+			
+			heroEntity.draw();
+			
+			drawHUD();
 	}
 	
 	private void drawLifes() {
@@ -295,7 +340,11 @@ public class Game {
 		for (int i = 0; i < lifes; i++) {
 			startWidth = startWidth-50;
 			life[i].draw(startWidth, 20);					
-		}		
+		}	
+		if (removeLife.isVisible()) {
+			removeLife.draw(heroEntity.getX(), heroEntity.getY());			
+		}
+		
 	}
 
 	private void drawLevel() {
@@ -326,20 +375,42 @@ public class Game {
 		font.drawString(10, 0, String.format("Current level %d",
 				currentLevel),
 				Color.white);
+		fontSmaller.drawString(320, 0, String.format("Collect %d Treasures",
+				maxTreasuresCount),
+				Color.white);
 		font.drawString(10, 20, String.format("Treasures collected %d/%d",
 				treasuresCollected, maxTreasuresCount),
 				Color.white);
-		font.drawString(10,SCREEN_SIZE_HEIGHT-70, String.format("SCORE %d",
+		font.drawString(10,60, String.format("Score %d",
 				score),
-				Color.white);	
+				Color.white);
 		if(lifes == 0){
 			font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Game Over"),
 					Color.white);
 			font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format("SCORE %d",
 					score),
 					Color.white);
-			font.drawString(SCREEN_SIZE_WIDTH/2-65,SCREEN_SIZE_HEIGHT/2+50, String.format("Press Esc to exit",
-					score),
+			if(score < record){
+			font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format("Record %d",
+					record),
+					Color.white);
+			} else {
+				font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2+50, String.format("New Record %d",
+					record),
+					Color.white);
+			} 
+		}
+		if(gamePaused == true){
+			font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Pause"),
+					Color.white);
+			font.drawString(SCREEN_SIZE_WIDTH/2-100,SCREEN_SIZE_HEIGHT/2, String.format("Press S to resume"),
+					Color.white);
+		}else if(gamePaused == false){
+			font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-70, String.format("Pause P"),
+					Color.white);
+			font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-50, String.format("Restart R"),
+					Color.white);
+			font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-30, String.format("Exit Esc"),
 					Color.white);
 		}
 	}
@@ -429,14 +500,22 @@ public class Game {
 			score++;
 			if(treasuresCollected == maxTreasuresCount){
 				treasuresCollected = 0;
-				maxTreasuresCount = maxTreasuresCount+20;
+				maxTreasuresCount = maxTreasuresCount+10;
 				currentLevel++;
-				startObjectsSpeed = startObjectsSpeed + 2; 
+				startObjectsSpeed = startObjectsSpeed + 1; 
 			}
 		} else if (object instanceof MeteorEntity) {
 			Entity mine = (Entity) object;
 			changeObjectCoordinate(mine);
+			removeLife.setVisible(true);
 			lifes--;
+			if(lifes == 0){
+				if(record == 0){					
+					record = score;
+				} else if(score > record){
+					record = score;
+				}
+			}
 		}
 	}
 }
