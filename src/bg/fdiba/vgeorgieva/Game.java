@@ -39,14 +39,16 @@ public class Game {
 	private static final int FRAMERATE = 60;
 
 	private static final int MAX_LIFES = 3;
-	private static final int MAX_TREASURES_COUNT = 15;
+	private static final int MAX_TREASURES_COUNT = 20;
 	private static final int START_OBJECTS_SPEED = 5;
-	private static final int MAX_MINES_COUNT = 4;	
+	private static final int MAX_MINES_COUNT = 5;
+	private static final int CURRENT_LEVEL = 1;
 	private static final int HERO_START_X = 50;
 	private static final int HERO_START_Y = 50;
 	private static final int SCORE = 0;
 	private static final int RECORD = 0;
 	private static final boolean GAME_PAUSED = false;
+	private static int START_LEVEL_TREASURES_COLLECTED = 0;
 	
 	/** Exit the game */
 	private boolean finished;
@@ -57,10 +59,11 @@ public class Game {
 	private ArrayList<Entity> levelsMines;
 	private Life[] life = new Life[MAX_LIFES];
 	private HeroEntity heroEntity;
-	private int currentLevel = 1;
+	private int currentLevel = CURRENT_LEVEL;
 	private static int startObjectsSpeed = START_OBJECTS_SPEED;
 	private int lifes = MAX_LIFES;
 	private int maxTreasuresCount = MAX_TREASURES_COUNT;
+	private int treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
 	private int score = SCORE;
 	private int record = RECORD;
 	private Audio meteroidSound;
@@ -69,7 +72,7 @@ public class Game {
 	private TrueTypeFont font;
 	private TrueTypeFont fontSmaller;
 	
-	private int treasuresCollected = 0;
+	
 
 	/**
 	 * Application init
@@ -99,11 +102,11 @@ public class Game {
 	public void restart() {		
 		try {
 			Display.destroy();
-			gamePaused = false;
-			startObjectsSpeed = 5;
+			gamePaused = GAME_PAUSED;
+			startObjectsSpeed = START_OBJECTS_SPEED;
 			lifes = MAX_LIFES;
-			currentLevel = 1;
-			treasuresCollected = 0;
+			currentLevel = CURRENT_LEVEL;
+			treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
 			maxTreasuresCount = MAX_TREASURES_COUNT;
 			score = SCORE;
 			init();
@@ -173,25 +176,27 @@ public class Game {
 	}
 
 	private void initTextures() throws IOException {
-		entities = new ArrayList<Entity>();
 		
 		initSounds();
 		initLevel();
 		initLifes();
+		initHero();
+		// Generate the treasures
+		initTreasures();
+		// Generate the meteroids
+		initMeteroids();
+	}
+	
+	private void initHero() throws IOException{
+		entities = new ArrayList<Entity>();
 		Texture texture;
-
-		// Load hero sprite
 		texture = TextureLoader.getTexture("PNG",
 				ResourceLoader.getResourceAsStream("res/avatar.png"));
 		heroEntity = new HeroEntity(this, new MySprite(texture), HERO_START_X,
 				HERO_START_Y);
 		
 		entities.add(heroEntity);
-
-		// Generate the treasures
-		initTreasures();
 	}
-	
 	
 	
 	private void initSounds() throws IOException {
@@ -217,15 +222,13 @@ public class Game {
 	}	
 	
 
-	private void initTreasures() throws IOException {
-		levelsTreasures = new ArrayList<Entity>();
-		levelsMines = new ArrayList<Entity>();
-
-		Texture texture = TextureLoader.getTexture("PNG",
-				ResourceLoader.getResourceAsStream("res/chest.png"));
+	private void initTreasures() throws IOException {		
 		Random rand = new Random();
 		int objectX;
 		int objectY;
+		levelsTreasures = new ArrayList<Entity>();
+		Texture texture = TextureLoader.getTexture("PNG",
+				ResourceLoader.getResourceAsStream("res/chest.png"));
 			for (int m = 0; m < maxTreasuresCount; m++) {
 				objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH + 1);
 				objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
@@ -233,10 +236,14 @@ public class Game {
 						texture), objectX, objectY);				
 				levelsTreasures.add(objectEntity);
 		}
-
+	}
+	
+	private void initMeteroids() throws IOException {
+		Random rand = new Random();
+		int objectX;
+		int objectY;
 		levelsMines = new ArrayList<Entity>();
-
-		texture = TextureLoader.getTexture("PNG",
+		Texture texture = TextureLoader.getTexture("PNG",
 				ResourceLoader.getResourceAsStream("res/meteor.png"));
 			for (int m = 0; m < MAX_MINES_COUNT; m++) {
 				objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH*2 - SCREEN_SIZE_WIDTH + 1);
@@ -334,16 +341,14 @@ public class Game {
 
 			drawLevel();
 	
-			drawObjects();
-			
-			drawLifes();
+			drawObjects();	
 			
 			heroEntity.draw();
 			
 			drawHUD();
 	}
 	
-	private void drawLifes() {
+	private void drawLifesHUD() {
 		int startWidth = SCREEN_SIZE_WIDTH;
 		for (int i = 0; i < lifes; i++) {
 			startWidth = startWidth-50;
@@ -377,6 +382,35 @@ public class Game {
 	}
 
 	private void drawHUD() {
+		drawLifesHUD();
+		
+		drawGameProgressionHUD();
+		
+		if(lifes == 0){
+			drawGameOverHUD();
+		}
+		if(gamePaused == true){
+			drawGamePausedHUD();
+		}else if(gamePaused == false){
+			drawMenuHUD();			
+		}
+	}
+	
+	private void drawGamePausedHUD(){
+		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Pause"),
+				Color.white);
+		font.drawString(SCREEN_SIZE_WIDTH/2-100,SCREEN_SIZE_HEIGHT/2, String.format("Press S to resume"),
+				Color.white);
+	}
+	private void drawMenuHUD() {
+		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-70, String.format("Pause P"),
+				Color.white);
+		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-50, String.format("Restart R"),
+				Color.white);
+		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-30, String.format("Exit Esc"),
+				Color.white);
+	}
+	private void drawGameProgressionHUD() {
 		font.drawString(10, 0, String.format("Current level %d",
 				currentLevel),
 				Color.white);
@@ -389,35 +423,23 @@ public class Game {
 		font.drawString(10,60, String.format("Score %d",
 				score),
 				Color.white);
-		if(lifes == 0){
-			font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Game Over"),
-					Color.white);
-			font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format("SCORE %d",
-					score),
-					Color.white);
-			if(score < record){
-			font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format("Record %d",
-					record),
-					Color.white);
-			} else {
-				font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2+50, String.format("New Record %d",
-					record),
-					Color.white);
-			} 
-		}
-		if(gamePaused == true){
-			font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Pause"),
-					Color.white);
-			font.drawString(SCREEN_SIZE_WIDTH/2-100,SCREEN_SIZE_HEIGHT/2, String.format("Press S to resume"),
-					Color.white);
-		}else if(gamePaused == false){
-			font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-70, String.format("Pause P"),
-					Color.white);
-			font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-50, String.format("Restart R"),
-					Color.white);
-			font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-30, String.format("Exit Esc"),
-					Color.white);
-		}
+	}
+	
+	private void drawGameOverHUD() {
+		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Game Over"),
+				Color.white);
+		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format("SCORE %d",
+				score),
+				Color.white);
+		if(score < record){
+		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format("Record %d",
+				record),
+				Color.white);
+		} else {
+			font.drawString(SCREEN_SIZE_WIDTH/2-60,SCREEN_SIZE_HEIGHT/2+50, String.format("New Record %d",
+				record),
+				Color.white);
+		} 
 	}
 
 	private void logicHero() {	
@@ -505,7 +527,7 @@ public class Game {
 			score++;
 			treasureCollectedSound.playAsSoundEffect(1.0f, 1.0f, false);
 			if(treasuresCollected == maxTreasuresCount){
-				treasuresCollected = 0;
+				treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
 				maxTreasuresCount = maxTreasuresCount+10;
 				levelUp.playAsSoundEffect(1.0f, 1.0f, false);
 				currentLevel++;
