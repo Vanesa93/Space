@@ -68,7 +68,7 @@ public class Game {
 	private int treasuresCollected = INITIAL_TREASURES_COLLECTED;
 	private int score = SCORE;
 	private int record = RECORD;
-	private Audio meteoroidSound;
+	private Audio meteroidSound;
 	private Audio treasureCollectedSound;
 	private Audio levelUp;
 	private TrueTypeFont font;
@@ -192,8 +192,8 @@ public class Game {
 		initHero();
 		// Generate the treasures
 		initTreasures();
-		// Generate the meteoroids
-		initMeteoroids();
+		// Generate the meteroids
+		initMeteroids();
 	}
 	
 	private void initHero() throws IOException{
@@ -211,7 +211,7 @@ public class Game {
 	
 	private void initSounds() throws IOException {
 		// load all sounds
-		meteoroidSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteoroid.wav"));
+		meteroidSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteoroid.wav"));
 		treasureCollectedSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/treasure.wav"));
 		levelUp = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/levelUp.wav"));
 	}
@@ -252,7 +252,7 @@ public class Game {
 		}
 	}
 	
-	private void initMeteoroids() throws IOException {
+	private void initMeteroids() throws IOException {
 		Random rand = new Random();
 		int objectX;
 		int objectY;
@@ -536,7 +536,7 @@ public class Game {
 
 	private void notifyObjectCollisionMine(Object object) {
 		Entity mine = (Entity) object;
-		meteoroidSound.playAsSoundEffect(1.0f, 1.0f, false);
+		meteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
 		changeObjectCoordinate(mine);
 		lifes--;
 		if(lifes == 0){
