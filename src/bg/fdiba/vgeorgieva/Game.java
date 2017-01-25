@@ -38,8 +38,9 @@ public class Game {
 	/** Desired frame time */
 	private static final int FRAMERATE = 60;
 
+	/** Desired frame time */
 	private static final int MAX_LIFES = 3;
-	private static final int MAX_TREASURES_COUNT = 20;
+	private static final int TREASURES_TO_COLLECT = 20;
 	private static final int START_OBJECTS_SPEED = 5;
 	private static final int MAX_MINES_COUNT = 5;
 	private static final int CURRENT_LEVEL = 1;
@@ -48,7 +49,7 @@ public class Game {
 	private static final int SCORE = 0;
 	private static final int RECORD = 0;
 	private static final boolean GAME_PAUSED = false;
-	private static int START_LEVEL_TREASURES_COLLECTED = 0;
+	private static int INITIAL_TREASURES_COLLECTED = 0;
 	
 	/** Exit the game */
 	private boolean finished;
@@ -62,8 +63,8 @@ public class Game {
 	private int currentLevel = CURRENT_LEVEL;
 	private static int startObjectsSpeed = START_OBJECTS_SPEED;
 	private int lifes = MAX_LIFES;
-	private int maxTreasuresCount = MAX_TREASURES_COUNT;
-	private int treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
+	private int treasuresToCollect = TREASURES_TO_COLLECT;
+	private int treasuresCollected = INITIAL_TREASURES_COLLECTED;
 	private int score = SCORE;
 	private int record = RECORD;
 	private Audio meteroidSound;
@@ -107,8 +108,8 @@ public class Game {
 			startObjectsSpeed = START_OBJECTS_SPEED;
 			lifes = MAX_LIFES;
 			currentLevel = CURRENT_LEVEL;
-			treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
-			maxTreasuresCount = MAX_TREASURES_COUNT;
+			treasuresCollected = INITIAL_TREASURES_COLLECTED;
+			treasuresToCollect = TREASURES_TO_COLLECT;
 			score = SCORE;
 			init();
 			run();
@@ -233,7 +234,7 @@ public class Game {
 		levelsTreasures = new ArrayList<Entity>();
 		Texture texture = TextureLoader.getTexture("PNG",
 				ResourceLoader.getResourceAsStream("res/chest.png"));
-		for (int m = 0; m < maxTreasuresCount; m++) {
+		for (int m = 0; m < treasuresToCollect; m++) {
 			objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH + 1);
 			objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
 			TreasureEntity objectEntity = new TreasureEntity(new MySprite(texture),
@@ -416,9 +417,9 @@ public class Game {
 	private void drawGameProgressionHUD() {
 		font.drawString(10, 0, String.format(Messages.getCurrentLevel(),currentLevel)
 				,Color.white);
-		fontSmaller.drawString(320, 0, String.format(Messages.getCollectTreasures(),maxTreasuresCount)
+		fontSmaller.drawString(320, 0, String.format(Messages.getCollectTreasures(),treasuresToCollect)
 				,Color.white);
-		font.drawString(10, 20, String.format(Messages.getTreasuresCollected(),treasuresCollected, maxTreasuresCount)
+		font.drawString(10, 20, String.format(Messages.getTreasuresCollected(),treasuresCollected, treasuresToCollect)
 				,Color.white);
 		font.drawString(10,60, String.format(Messages.getScore(),score),
 				Color.white);
@@ -544,9 +545,9 @@ public class Game {
 		treasuresCollected++;
 		score++;
 		treasureCollectedSound.playAsSoundEffect(1.0f, 1.0f, false);
-		if(treasuresCollected == maxTreasuresCount){
-			treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
-			maxTreasuresCount = maxTreasuresCount+10;
+		if(treasuresCollected == treasuresToCollect){
+			treasuresCollected = INITIAL_TREASURES_COLLECTED;
+			treasuresToCollect = treasuresToCollect+10;
 			levelUp.playAsSoundEffect(1.0f, 1.0f, false);
 			currentLevel++;
 			startObjectsSpeed = startObjectsSpeed + 1; 
