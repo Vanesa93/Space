@@ -100,6 +100,7 @@ public class Game {
 	}
 
 	public void restart() {		
+		// restart the game
 		try {
 			Display.destroy();
 			gamePaused = GAME_PAUSED;
@@ -176,10 +177,13 @@ public class Game {
 	}
 
 	private void initTextures() throws IOException {
-		
+		// Generate sounds
 		initSounds();
+		// Generate level tiles
 		initLevel();
+		// Generate lifes  
 		initLifes();
+		//Generate hero
 		initHero();
 		// Generate the treasures
 		initTreasures();
@@ -229,12 +233,12 @@ public class Game {
 		levelsTreasures = new ArrayList<Entity>();
 		Texture texture = TextureLoader.getTexture("PNG",
 				ResourceLoader.getResourceAsStream("res/chest.png"));
-			for (int m = 0; m < maxTreasuresCount; m++) {
-				objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH + 1);
-				objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
-				TreasureEntity objectEntity = new TreasureEntity(new MySprite(
-						texture), objectX, objectY);				
-				levelsTreasures.add(objectEntity);
+		for (int m = 0; m < maxTreasuresCount; m++) {
+			objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH + 1);
+			objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
+			TreasureEntity objectEntity = new TreasureEntity(new MySprite(texture),
+					objectX, objectY);				
+			levelsTreasures.add(objectEntity);
 		}
 	}
 	
@@ -245,13 +249,12 @@ public class Game {
 		levelsMines = new ArrayList<Entity>();
 		Texture texture = TextureLoader.getTexture("PNG",
 				ResourceLoader.getResourceAsStream("res/meteor.png"));
-			for (int m = 0; m < MAX_MINES_COUNT; m++) {
-				objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH*2 - SCREEN_SIZE_WIDTH + 1);
-				objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
-				MeteorEntity objectEntity = new MeteorEntity(new MySprite(texture),
-						objectX, objectY);
-
-				levelsMines.add(objectEntity);
+		for (int m = 0; m < MAX_MINES_COUNT; m++) {
+			objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH*2 - SCREEN_SIZE_WIDTH + 1);
+			objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
+			MeteorEntity objectEntity = new MeteorEntity(new MySprite(texture),
+					objectX, objectY);
+			levelsMines.add(objectEntity);
 		}
 	}
 
@@ -308,27 +311,27 @@ public class Game {
 			finished = true;
 		}
 		
+		// Press R - restart 
 		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
 			restart();
-		}
-		
+		}		
 	
-		if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
+		// Press P - pause 
+		if (Keyboard.isKeyDown(Keyboard.KEY_P) && lifes > 0) {
 			gamePaused = true;
 		}
 		
+		// Press S - resume
 		if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
 			gamePaused = false;
 		}
 		
-		if(gamePaused == false) {
-			if (lifes > 0) {
+		if(gamePaused == false && lifes > 0) {
 				SoundStore.get().poll(0);
 				logicHero();
 				logicTreasures();
 				logicMines();
 				checkForCollision();
-			}
 		}
 	}
 
@@ -397,47 +400,40 @@ public class Game {
 	}
 	
 	private void drawGamePausedHUD(){
-		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Pause"),
+		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format(Messages.getPause()),
 				Color.white);
-		font.drawString(SCREEN_SIZE_WIDTH/2-100,SCREEN_SIZE_HEIGHT/2, String.format("Press S to resume"),
+		font.drawString(SCREEN_SIZE_WIDTH/2-100,SCREEN_SIZE_HEIGHT/2, String.format(Messages.getResume()),
 				Color.white);
 	}
 	private void drawMenuHUD() {
-		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-70, String.format("Pause P"),
+		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-70, String.format(Messages.getPauseWithKey()),
 				Color.white);
-		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-50, String.format("Restart R"),
+		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-50, String.format(Messages.getRestartWithK()),
 				Color.white);
-		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-30, String.format("Exit Esc"),
+		font.drawString(SCREEN_SIZE_WIDTH-100, SCREEN_SIZE_HEIGHT-30, String.format(Messages.getExitWithKey()),
 				Color.white);
 	}
 	private void drawGameProgressionHUD() {
-		font.drawString(10, 0, String.format("Current level %d",
-				currentLevel),
-				Color.white);
-		fontSmaller.drawString(320, 0, String.format("Collect %d Treasures",
-				maxTreasuresCount),
-				Color.white);
-		font.drawString(10, 20, String.format("Treasures collected %d/%d",
-				treasuresCollected, maxTreasuresCount),
-				Color.white);
-		font.drawString(10,60, String.format("Score %d",
-				score),
+		font.drawString(10, 0, String.format(Messages.getCurrentLevel(),currentLevel)
+				,Color.white);
+		fontSmaller.drawString(320, 0, String.format(Messages.getCollectTreasures(),maxTreasuresCount)
+				,Color.white);
+		font.drawString(10, 20, String.format(Messages.getTreasuresCollected(),treasuresCollected, maxTreasuresCount)
+				,Color.white);
+		font.drawString(10,60, String.format(Messages.getScore(),score),
 				Color.white);
 	}
 	
 	private void drawGameOverHUD() {
-		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format("Game Over"),
+		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format(Messages.getGameOver()),
 				Color.white);
-		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format("SCORE %d",
-				score),
+		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format(Messages.getScore(),score),
 				Color.white);
 		if(score < record){
-		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format("Record %d",
-				record),
+		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getRecord(),record),
 				Color.white);
 		} else {
-			font.drawString(SCREEN_SIZE_WIDTH/2-60,SCREEN_SIZE_HEIGHT/2+50, String.format("New Record %d",
-				record),
+			font.drawString(SCREEN_SIZE_WIDTH/2-60,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getNewRecord(),record),
 				Color.white);
 		} 
 	}
@@ -521,30 +517,40 @@ public class Game {
 
 	public void notifyObjectCollision(Entity notifier, Object object) {		
 		if (object instanceof TreasureEntity) {
-			Entity treasure = (Entity) object;
-			changeObjectCoordinate(treasure);
-			treasuresCollected++;
-			score++;
-			treasureCollectedSound.playAsSoundEffect(1.0f, 1.0f, false);
-			if(treasuresCollected == maxTreasuresCount){
-				treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
-				maxTreasuresCount = maxTreasuresCount+10;
-				levelUp.playAsSoundEffect(1.0f, 1.0f, false);
-				currentLevel++;
-				startObjectsSpeed = startObjectsSpeed + 1; 
-			}
+			notifyObjectCollisionTreasure(object);			
 		} else if (object instanceof MeteorEntity) {
-			Entity mine = (Entity) object;
-			meteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
-			changeObjectCoordinate(mine);
-			lifes--;
-			if(lifes == 0){
-				if(record == 0){					
-					record = score;
-				} else if(score > record){
-					record = score;
-				}
+		    notifyObjectCollisionMine(object);
+		}
+	}
+
+	private void notifyObjectCollisionMine(Object object) {
+		Entity mine = (Entity) object;
+		meteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
+		changeObjectCoordinate(mine);
+		lifes--;
+		if(lifes == 0){
+			if(record == 0){					
+				record = score;
+			} else if(score > record){
+				record = score;
 			}
 		}
+		
+	}
+
+	private void notifyObjectCollisionTreasure(Object object) {
+		Entity treasure = (Entity) object;
+		changeObjectCoordinate(treasure);
+		treasuresCollected++;
+		score++;
+		treasureCollectedSound.playAsSoundEffect(1.0f, 1.0f, false);
+		if(treasuresCollected == maxTreasuresCount){
+			treasuresCollected = START_LEVEL_TREASURES_COLLECTED;
+			maxTreasuresCount = maxTreasuresCount+10;
+			levelUp.playAsSoundEffect(1.0f, 1.0f, false);
+			currentLevel++;
+			startObjectsSpeed = startObjectsSpeed + 1; 
+		}
+		
 	}
 }
