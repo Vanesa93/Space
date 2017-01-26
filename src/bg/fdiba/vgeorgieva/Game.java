@@ -42,7 +42,7 @@ public class Game {
 	private static final int MAX_LIFES = 3;
 	private static final int TREASURES_TO_COLLECT = 20;
 	private static final int START_OBJECTS_SPEED = 5;
-	private static final int MAX_MINES_COUNT = 5;
+	private static final int MAX_METEOROIDS_COUNT = 5;
 	private static final int CURRENT_LEVEL = 1;
 	private static final int HERO_START_X = 50;
 	private static final int HERO_START_Y = 50;
@@ -58,7 +58,7 @@ public class Game {
 	private LevelTile levelTile;
 	private ArrayList<Entity> entities;
 	private ArrayList<Entity> levelsTreasures;
-	private ArrayList<Entity> levelsMines;
+	private ArrayList<Entity> levelsMeteoroids;
 	private Life[] life = new Life[MAX_LIFES];
 	private HeroEntity heroEntity;
 	private int currentLevel = CURRENT_LEVEL;
@@ -68,7 +68,7 @@ public class Game {
 	private int treasuresCollected = INITIAL_TREASURES_COLLECTED;
 	private int score = SCORE;
 	private int record = RECORD;
-	private Audio meteroidSound;
+	private Audio meteoroidSound;
 	private Audio treasureCollectedSound;
 	private Audio levelUp;
 	private TrueTypeFont font;
@@ -192,8 +192,8 @@ public class Game {
 		initHero();
 		// Generate the treasures
 		initTreasures();
-		// Generate the meteroids
-		initMeteroids();
+		// Generate the meteoroids
+		initMeteoroids();
 	}
 	
 	private void initHero() throws IOException{
@@ -211,7 +211,7 @@ public class Game {
 	
 	private void initSounds() throws IOException {
 		// load all sounds
-		meteroidSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteoroid.wav"));
+		meteoroidSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteoroid.wav"));
 		treasureCollectedSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/treasure.wav"));
 		levelUp = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/levelUp.wav"));
 	}
@@ -252,20 +252,20 @@ public class Game {
 		}
 	}
 	
-	private void initMeteroids() throws IOException {
+	private void initMeteoroids() throws IOException {
 		Random rand = new Random();
 		int objectX;
 		int objectY;
-		levelsMines = new ArrayList<Entity>();
+		levelsMeteoroids = new ArrayList<Entity>();
 		Texture texture = TextureLoader.getTexture("PNG",
 				ResourceLoader.getResourceAsStream("res/meteoroid.png"));
-		for (int m = 0; m < MAX_MINES_COUNT; m++) {
+		for (int m = 0; m < MAX_METEOROIDS_COUNT; m++) {
 			// x for every meteoroid should be greater than SCREEN_SIZE_WIDTH and to be random
 			objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH);
 			objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
 			MeteoroidEntity objectEntity = new MeteoroidEntity(new MySprite(texture),
 					objectX, objectY);
-			levelsMines.add(objectEntity);
+			levelsMeteoroids.add(objectEntity);
 		}
 	}
 
@@ -323,7 +323,7 @@ public class Game {
 		}
 		
 		// Press R - restart 
-		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_N)) {
 			restart();
 		}		
 	
@@ -333,7 +333,7 @@ public class Game {
 		}
 		
 		// Press S - resume
-		if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
 			gamePaused = false;
 		}
 		
@@ -341,7 +341,7 @@ public class Game {
 				SoundStore.get().poll(0);
 				logicHero();
 				logicTreasures();
-				logicMines();
+				logicMeteoroids();
 				checkForCollision();
 		}
 	}
@@ -388,7 +388,7 @@ public class Game {
 			}
 		}
 
-		for (Entity entity : levelsMines) {
+		for (Entity entity : levelsMeteoroids) {
 			if (entity.isVisible()) {
 				entity.draw();
 			}
@@ -438,10 +438,10 @@ public class Game {
 	private void drawGameOverHUD() {
 		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format(Messages.getGameOver()),
 				Color.white);
-		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format(Messages.getScore(),score),
+		font.drawString(SCREEN_SIZE_WIDTH/2-35,SCREEN_SIZE_HEIGHT/2, String.format(Messages.getScore(),score),
 				Color.white);
 		if(score < record){
-		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getRecord(),record),
+		font.drawString(SCREEN_SIZE_WIDTH/2-45,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getRecord(),record),
 				Color.white);
 		} else {
 			font.drawString(SCREEN_SIZE_WIDTH/2-60,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getNewRecord(),record),
@@ -476,14 +476,14 @@ public class Game {
 		}		
 	}
 	
-	private void logicMines() {
-		for (int i = 0; i < levelsMines.size(); i++) {
-			Entity mine = levelsMines.get(i);
-			if (mine.getX()>0) {
-				mine.setX(mine.getX() - startObjectsSpeed);
+	private void logicMeteoroids() {
+		for (int i = 0; i < levelsMeteoroids.size(); i++) {
+			Entity meteoroid = levelsMeteoroids.get(i);
+			if (meteoroid.getX()>0) {
+				meteoroid.setX(meteoroid.getX() - startObjectsSpeed);
 			}
 			else {
-				changeObjectCoordinate(mine);
+				changeObjectCoordinate(meteoroid);
 			}
 		}		
 	}
@@ -510,8 +510,8 @@ public class Game {
 			}
 		}
 
-		for (int i = 0; i < levelsMines.size(); i++) {
-			Entity him = levelsMines.get(i);
+		for (int i = 0; i < levelsMeteoroids.size(); i++) {
+			Entity him = levelsMeteoroids.get(i);
 
 			if (heroEntity.collidesWith(him)) {
 				heroEntity.collidedWith(him);
@@ -530,14 +530,14 @@ public class Game {
 		if (object instanceof TreasureEntity) {
 			notifyObjectCollisionTreasure(object);			
 		} else if (object instanceof MeteoroidEntity) {
-		    notifyObjectCollisionMine(object);
+		    notifyObjectCollisionMeteoroid(object);
 		}
 	}
 
-	private void notifyObjectCollisionMine(Object object) {
-		Entity mine = (Entity) object;
-		meteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
-		changeObjectCoordinate(mine);
+	private void notifyObjectCollisionMeteoroid(Object object) {
+		Entity meteoroid = (Entity) object;
+		meteoroidSound.playAsSoundEffect(1.0f, 1.0f, false);
+		changeObjectCoordinate(meteoroid);
 		lifes--;
 		if(lifes == 0){
 			if(record == 0){					

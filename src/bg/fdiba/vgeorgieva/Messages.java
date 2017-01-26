@@ -9,7 +9,7 @@ public class Messages {
 	}
 
 	public static String getResume() {
-		message = "Press S to resume";
+		message = "Press R to resume";
 		return message;
 	}
 
@@ -19,7 +19,7 @@ public class Messages {
 	}
 
 	public static String getRestartWithK() {
-		message = "Restart R";
+		message = "Restart N";
 		return message;
 	}
 
