@@ -1,6 +1,7 @@
 package bg.fdiba.vgeorgieva;
 
 public class Messages {
+	// all messages for the game are here
 	private static String message;	
 
 	public static String getPause() {
