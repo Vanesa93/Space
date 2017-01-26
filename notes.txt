@@ -1,0 +1,27 @@
+Space gameplay:
+
+The game is for one player:You play with a space ship and you have 3 lifes. The game has unlimited count of levels. 
+From the right side of the screen are coming treasure chests and meteoroids.
+
+The goal of the game is collecting maximum count of treasure chests and keep avoiding meteoroites.
+In the first level the player should collect 20 treasure boxes to pass. With every level
+the amount of the treasures to be collected increases with 10 and the speed of the 
+treasure boxes and the meteoroids increases with 1.  If the player collides with a meteoroite,
+he loses 1 life. The game over, when the player collides with meteorites 3 times. 
+
+The player can pause and restart the game.
+
+Sources:
+
+Space ship image:
+http://freepngimages.com/ufo-spaceship-png-image/
+
+Meteorite:
+http://abali.ru/?tag=s&lang=en
+
+Treasure chest:
+http://shop.deviantart.com/
+
+Sounds:
+http://opengameart.org/content/100-plus-game-sound-effects-wavoggm4a
+https://www.freesound.org/people/Cabeeno%20Rossley/sounds/126422/

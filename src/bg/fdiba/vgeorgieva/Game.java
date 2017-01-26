@@ -43,7 +43,7 @@ public class Game {
 	private static final int MAX_LIFES = 3;
 	private static final int TREASURES_TO_COLLECT = 20;
 	private static final int START_OBJECTS_SPEED = 5;
-	private static final int MAX_METEOROIDS_COUNT = 5;
+	private static final int MAX_METEORITES_COUNT = 5;
 	private static final int CURRENT_LEVEL = 1;
 	private static final int HERO_START_X = 50;
 	private static final int HERO_START_Y = 50;
@@ -59,7 +59,7 @@ public class Game {
 	private LevelTile levelTile;
 	private ArrayList<Entity> entities;
 	private ArrayList<Entity> levelsTreasures;
-	private ArrayList<Entity> levelsMeteoroids;
+	private ArrayList<Entity> levelsMeteorites;
 	private Life[] life = new Life[MAX_LIFES];
 	private HeroEntity heroEntity;
 	private int currentLevel = CURRENT_LEVEL;
@@ -69,7 +69,7 @@ public class Game {
 	private int treasuresCollected = INITIAL_TREASURES_COLLECTED;
 	private int score = SCORE;
 	private int record = RECORD;
-	private Audio meteoroidSound;
+	private Audio meteoriteSound;
 	private Audio treasureCollectedSound;
 	private Audio levelUp;
 	private TrueTypeFont font;
@@ -192,8 +192,8 @@ public class Game {
 		initHero();
 		// Generate the treasures
 		initTreasures();
-		// Generate the meteoroids
-		initMeteoroids();
+		// Generate the meteorites
+		initMeteorites();
 	}
 	
 	private void initHero() throws IOException{
@@ -211,7 +211,7 @@ public class Game {
 	
 	private void initSounds() throws IOException {
 		// load all sounds
-		meteoroidSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteoroid.wav"));
+		meteoriteSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/meteorite.wav"));
 		treasureCollectedSound = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/treasure.wav"));
 		levelUp = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/levelUp.wav"));
 	}
@@ -254,20 +254,20 @@ public class Game {
 		}
 	}
 	
-	private void initMeteoroids() throws IOException {
+	private void initMeteorites() throws IOException {
 		Random rand = new Random();
 		int objectX;
 		int objectY;
-		levelsMeteoroids = new ArrayList<Entity>();
+		levelsMeteorites = new ArrayList<Entity>();
 		Texture texture = TextureLoader.getTexture("PNG",
-				ResourceLoader.getResourceAsStream("res/meteoroid.png"));
-		for (int m = 0; m < MAX_METEOROIDS_COUNT; m++) {
-			// x for every meteoroid should be greater than SCREEN_SIZE_WIDTH and to be random
+				ResourceLoader.getResourceAsStream("res/meteorite.png"));
+		for (int m = 0; m < MAX_METEORITES_COUNT; m++) {
+			// x for every meteorite should be greater than SCREEN_SIZE_WIDTH and to be random
 			objectX =SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH);
 			objectY = rand.nextInt(SCREEN_SIZE_HEIGHT- texture.getImageHeight());
-			MeteoroidEntity objectEntity = new MeteoroidEntity(new MySprite(texture),
+			MeteoriteEntity objectEntity = new MeteoriteEntity(new MySprite(texture),
 					objectX, objectY);
-			levelsMeteoroids.add(objectEntity);
+			levelsMeteorites.add(objectEntity);
 		}
 	}
 
@@ -348,7 +348,7 @@ public class Game {
 			SoundStore.get().poll(0);
 			logicHero();
 			logicTreasures();
-			logicMeteoroids();
+			logicMeteorites();
 			checkForCollision();
 		}
 	}
@@ -361,7 +361,7 @@ public class Game {
 		Color.white.bind();
 		// renders all background tiles
 		drawLevelTiles();
-		// renders treasures and meteoroids
+		// renders treasures and meteorites
 		drawObjects();	
 			
 		// renders hero
@@ -400,8 +400,8 @@ public class Game {
 			}
 		}
 		
-		// renders all meteoroids
-		for (Entity entity : levelsMeteoroids) {
+		// renders all meteorites
+		for (Entity entity : levelsMeteorites) {
 			if (entity.isVisible()) {
 				entity.draw();
 			}
@@ -504,15 +504,15 @@ public class Game {
 		}		
 	}
 	
-	private void logicMeteoroids() {
-		// the same logic for meteoroids as in logicTreasures
-		for (int i = 0; i < levelsMeteoroids.size(); i++) {
-			Entity meteoroid = levelsMeteoroids.get(i);
-			if (meteoroid.getX()>0) {
-				meteoroid.setX(meteoroid.getX() - objectSpeed);
+	private void logicMeteorites() {
+		// the same logic for meteorites as in logicTreasures
+		for (int i = 0; i < levelsMeteorites.size(); i++) {
+			Entity meteorite = levelsMeteorites.get(i);
+			if (meteorite.getX()>0) {
+				meteorite.setX(meteorite.getX() - objectSpeed);
 			}
 			else {
-				changeObjectCoordinate(meteoroid);
+				changeObjectCoordinate(meteorite);
 			}
 		}		
 	}
@@ -539,8 +539,8 @@ public class Game {
 			}
 		}
 
-		for (int i = 0; i < levelsMeteoroids.size(); i++) {
-			Entity him = levelsMeteoroids.get(i);
+		for (int i = 0; i < levelsMeteorites.size(); i++) {
+			Entity him = levelsMeteorites.get(i);
 
 			if (heroEntity.collidesWith(him)) {
 				heroEntity.collidedWith(him);
@@ -558,15 +558,15 @@ public class Game {
 	public void notifyObjectCollision(Entity notifier, Object object) {		
 		if (object instanceof TreasureEntity) {
 			notifyObjectCollisionTreasure(object);			
-		} else if (object instanceof MeteoroidEntity) {
-		    notifyObjectCollisionMeteoroid(object);
+		} else if (object instanceof MeteoriteEntity) {
+		    notifyObjectCollisionMeteorite(object);
 		}
 	}
 
-	private void notifyObjectCollisionMeteoroid(Object object) {
-		Entity meteoroid = (Entity) object;
-		meteoroidSound.playAsSoundEffect(1.0f, 1.0f, false);
-		changeObjectCoordinate(meteoroid);
+	private void notifyObjectCollisionMeteorite(Object object) {
+		Entity meteorite = (Entity) object;
+		meteoriteSound.playAsSoundEffect(1.0f, 1.0f, false);
+		changeObjectCoordinate(meteorite);
 		lifes--;
 		if(lifes == 0){
 			// if the score is equal 0
