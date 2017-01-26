@@ -15,10 +15,11 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
-import org.newdawn.slick.util.ResourceLoader;
+import org.lwjgl.openal.AL;
 import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.openal.SoundStore;
+import org.newdawn.slick.util.ResourceLoader;
 /**
  * 
  * This is a <em>very basic</em> skeleton to init a game and run it.
@@ -74,7 +75,6 @@ public class Game {
 	private TrueTypeFont font;
 	private TrueTypeFont fontSmaller;
 	
-	
 
 	/**
 	 * Application init
@@ -105,7 +105,7 @@ public class Game {
 		// restart the game
 		try {
 			// close current screen
-			Display.destroy();
+			Display.destroy();		
 			// set all variables to their initial states
 			gamePaused = GAME_PAUSED;
 			startObjectsSpeed = START_OBJECTS_SPEED;
@@ -306,10 +306,11 @@ public class Game {
 	 * Do any game-specific cleanup
 	 */
 	private void cleanup() {
-		// TODO: save anything you want to disk here
-
+		SoundStore.get().clear();
 		// Close the window
 		Display.destroy();
+		
+		AL.destroy();
 	}
 
 	/**
@@ -338,6 +339,8 @@ public class Game {
 		}
 		
 		if(gamePaused == false && lifes > 0) {
+			// polling is required to allow streaming to get a chance to
+	        // queue buffers.
 				SoundStore.get().poll(0);
 				logicHero();
 				logicTreasures();
@@ -438,10 +441,10 @@ public class Game {
 	private void drawGameOverHUD() {
 		font.drawString(SCREEN_SIZE_WIDTH/2-50,SCREEN_SIZE_HEIGHT/2-50, String.format(Messages.getGameOver()),
 				Color.white);
-		font.drawString(SCREEN_SIZE_WIDTH/2-35,SCREEN_SIZE_HEIGHT/2, String.format(Messages.getScore(),score),
+		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2, String.format(Messages.getScore(),score),
 				Color.white);
 		if(score < record){
-		font.drawString(SCREEN_SIZE_WIDTH/2-45,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getRecord(),record),
+		font.drawString(SCREEN_SIZE_WIDTH/2-40,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getRecord(),record),
 				Color.white);
 		} else {
 			font.drawString(SCREEN_SIZE_WIDTH/2-60,SCREEN_SIZE_HEIGHT/2+50, String.format(Messages.getNewRecord(),record),
