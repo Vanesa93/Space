@@ -63,7 +63,7 @@ public class Game {
 	private Life[] life = new Life[MAX_LIFES];
 	private HeroEntity heroEntity;
 	private int currentLevel = CURRENT_LEVEL;
-	private static int startObjectsSpeed = START_OBJECTS_SPEED;
+	private static int objectSpeed = START_OBJECTS_SPEED;
 	private int lifes = MAX_LIFES;
 	private int treasuresToCollect = TREASURES_TO_COLLECT;
 	private int treasuresCollected = INITIAL_TREASURES_COLLECTED;
@@ -108,13 +108,13 @@ public class Game {
 			Display.destroy();		
 			// set all variables to their initial states
 			gamePaused = GAME_PAUSED;
-			startObjectsSpeed = START_OBJECTS_SPEED;
+			objectSpeed = START_OBJECTS_SPEED;
 			lifes = MAX_LIFES;
 			currentLevel = CURRENT_LEVEL;
 			treasuresCollected = INITIAL_TREASURES_COLLECTED;
 			treasuresToCollect = TREASURES_TO_COLLECT;
 			score = SCORE;
-			// Initialise new game
+			// Initialize new game
 			init();
 			run();
 		} catch (Exception e) {
@@ -136,7 +136,7 @@ public class Game {
 		// mouse, keyboard, and gamepad inputs.
 		try {
 			initGL(SCREEN_SIZE_WIDTH, SCREEN_SIZE_HEIGHT);
-			// Initialise all textures
+			// Initialize all textures
 			initTextures();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -197,7 +197,7 @@ public class Game {
 	}
 	
 	private void initHero() throws IOException{
-		// initialise hero entity
+		// Initialize hero entity
 		entities = new ArrayList<Entity>();
 		Texture texture;
 		texture = TextureLoader.getTexture("PNG",
@@ -225,7 +225,9 @@ public class Game {
 	}
 	
 	private void initLifes() throws IOException {
-		// Initialize all life textures only if the hero has lifes 
+		// Initialize all life textures.The count of the 
+		// loaded life textures is equal to the lifes
+		// of the hero
 		Texture texture;
 		for(int i=0; i<=lifes-1; i++){
 			texture = TextureLoader.getTexture("PNG",
@@ -323,17 +325,19 @@ public class Game {
 			finished = true;
 		}
 		
-		// Press R - restart 
+		// Press N - restart 
 		if (Keyboard.isKeyDown(Keyboard.KEY_N)) {
 			restart();
 		}		
 	
+		// only if the hero has lifes
 		// Press P - pause 
 		if (Keyboard.isKeyDown(Keyboard.KEY_P) && lifes > 0) {
 			gamePaused = true;
 		}
 		
-		// Press S - resume
+		// only if the hero has lifes
+		// Press R - resume
 		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
 			gamePaused = false;
 		}
@@ -341,11 +345,11 @@ public class Game {
 		if(gamePaused == false && lifes > 0) {
 			// polling is required to allow streaming to get a chance to
 	        // queue buffers.
-				SoundStore.get().poll(0);
-				logicHero();
-				logicTreasures();
-				logicMeteoroids();
-				checkForCollision();
+			SoundStore.get().poll(0);
+			logicHero();
+			logicTreasures();
+			logicMeteoroids();
+			checkForCollision();
 		}
 	}
 
@@ -355,26 +359,19 @@ public class Game {
 	private void render() {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
 		Color.white.bind();
-
-			drawLevel();
-	
-			drawObjects();	
+		// renders all background tiles
+		drawLevelTiles();
+		// renders treasures and meteoroids
+		drawObjects();	
 			
-			heroEntity.draw();
+		// renders hero
+		heroEntity.draw();
 			
-			drawHUD();
+		// renders everything needed for the status bar(head-up display)
+		drawHUD();
 	}
 	
-	private void drawLifesHUD() {
-		int startWidth = SCREEN_SIZE_WIDTH;
-		for (int i = 0; i < lifes; i++) {
-			startWidth = startWidth-50;
-			life[i].draw(startWidth, 20);					
-		}	
-		
-	}
-
-	private void drawLevel() {
+	private void drawLevelTiles() {
 		for (int a = 0; a * levelTile.getHeight() < SCREEN_SIZE_HEIGHT; a++) {
 			for (int b = 0; b * levelTile.getWidth() < SCREEN_SIZE_WIDTH; b++) {
 				int textureX = levelTile.getWidth() * b;
@@ -383,14 +380,27 @@ public class Game {
 			}
 		}
 	}
+	
+	private void drawLifesHUD() {
+		// renders lifes tiles
+		// their count is equal hero lifes
+		int startWidth = SCREEN_SIZE_WIDTH;
+		for (int i = 0; i < lifes; i++) {
+			startWidth = startWidth-50;
+			life[i].draw(startWidth, 20);					
+		}	
+		
+	}
 
 	private void drawObjects() {
+		// renders all treasures
 		for (Entity entity : levelsTreasures) {
 			if (entity.isVisible()) {
 				entity.draw();
 			}
 		}
-
+		
+		// renders all meteoroids
 		for (Entity entity : levelsMeteoroids) {
 			if (entity.isVisible()) {
 				entity.draw();
@@ -399,18 +409,28 @@ public class Game {
 	}
 
 	private void drawHUD() {
+		// renders all life tiles
 		drawLifesHUD();
 		
+		// renders all messages for game progression
+		// current level, collected treasures, 
+		// treasures to collect and score
 		drawGameProgressionHUD();
 		
 		if(lifes == 0){
+			// renders all messages for game over
+			// score, record and game over
 			drawGameOverHUD();
 		}
+		
+		// renders all messages for game pause
+		// pause and resume, only if p is pressed
 		if(gamePaused == true){
-			drawGamePausedHUD();
-		}else if(gamePaused == false){
-			drawMenuHUD();			
+			drawGamePausedHUD();		
 		}
+		// renders all messages about
+		// about how to pause, restart or exit the game
+			drawMenuHUD();			
 	}
 	
 	private void drawGamePausedHUD(){
@@ -460,7 +480,7 @@ public class Game {
 		}
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-			if (heroEntity.getY() + heroEntity.getHeight() < Display
+			if ((heroEntity.getY() + heroEntity.getHeight()) < Display
 					.getDisplayMode().getHeight()) {
 				heroEntity.setY(heroEntity.getY() + 10);
 			}
@@ -470,9 +490,14 @@ public class Game {
 	private void logicTreasures() {
 		for (int i = 0; i < levelsTreasures.size(); i++) {
 			Entity treasure = levelsTreasures.get(i);
+			// if the treasure x is greater the 0
+			// it decreases depending on startObjectSpeed
 			if (treasure.getX()>0) {
-				treasure.setX(treasure.getX() - startObjectsSpeed);
+				treasure.setX(treasure.getX() - objectSpeed);
 			}
+			// if the x is less than 0
+			// the coordinates x and y 
+			// of this treasure tile are changed
 			else {
 				changeObjectCoordinate(treasure);
 			}
@@ -480,10 +505,11 @@ public class Game {
 	}
 	
 	private void logicMeteoroids() {
+		// the same logic for meteoroids as in logicTreasures
 		for (int i = 0; i < levelsMeteoroids.size(); i++) {
 			Entity meteoroid = levelsMeteoroids.get(i);
 			if (meteoroid.getX()>0) {
-				meteoroid.setX(meteoroid.getX() - startObjectsSpeed);
+				meteoroid.setX(meteoroid.getX() - objectSpeed);
 			}
 			else {
 				changeObjectCoordinate(meteoroid);
@@ -525,7 +551,7 @@ public class Game {
 	
 	private void changeObjectCoordinate(Entity entity) {
 		Random rand = new Random();
-		entity.setX(SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH*2 - SCREEN_SIZE_WIDTH + 1));
+		entity.setX(SCREEN_SIZE_WIDTH + rand.nextInt(SCREEN_SIZE_WIDTH));
 		entity.setY(rand.nextInt(SCREEN_SIZE_HEIGHT));				
 	}
 
@@ -543,8 +569,11 @@ public class Game {
 		changeObjectCoordinate(meteoroid);
 		lifes--;
 		if(lifes == 0){
+			// if the score is equal 0
 			if(record == 0){					
 				record = score;
+			// if current score is greater than record
+			// it become the new record
 			} else if(score > record){
 				record = score;
 			}
@@ -559,11 +588,14 @@ public class Game {
 		score++;
 		treasureCollectedSound.playAsSoundEffect(1.0f, 1.0f, false);
 		if(treasuresCollected == treasuresToCollect){
+			// treasures collected became 0
 			treasuresCollected = INITIAL_TREASURES_COLLECTED;
+			// treasuresToCollecr increases with 10
 			treasuresToCollect = treasuresToCollect+10;
 			levelUp.playAsSoundEffect(1.0f, 1.0f, false);
 			currentLevel++;
-			startObjectsSpeed = startObjectsSpeed + 1; 
+			// objectSpeed increases with 1
+			objectSpeed = objectSpeed + 1; 
 		}
 		
 	}
